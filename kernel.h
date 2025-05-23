@@ -1,12 +1,12 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 #include <__stddef_size_t.h>
-/* Constantes do sistema */
+// Constantes do sistema
 #define VGA_ADDRESS 0xB8000
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-/* Cores disponíveis no modo VGA */
+// Cores disponíveis no modo VGA
 typedef enum {
   VGA_COLOR_BLACK = 0,
   VGA_COLOR_BLUE = 1,
@@ -26,7 +26,7 @@ typedef enum {
   VGA_COLOR_WHITE = 15
 } vga_color;
 
-/* Estrutura para representar o terminal */
+// Estrutura para representar o terminal
 typedef struct {
   unsigned short *buffer;
   int cursor_x;
@@ -35,7 +35,7 @@ typedef struct {
   vga_color bg_color;
 } Terminal;
 
-/* Protótipos de funções */
+// Protótipos de funções
 unsigned char vga_entry_color(vga_color fg, vga_color bg);
 unsigned short vga_entry(unsigned char uc, unsigned char color);
 void terminal_initialize(Terminal *term);
@@ -46,4 +46,4 @@ void terminal_write(Terminal *term, const char *data, size_t size);
 void terminal_writestring(Terminal *term, const char *data);
 void kernel_main(void);
 
-#endif /* KERNEL_H */
+#endif

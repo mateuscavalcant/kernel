@@ -1,7 +1,7 @@
 #include "kernel.h"
-#include <stddef.h> // Para size_t
+#include <stddef.h>
 
-/* Funções básicas de VGA */
+// Funções básicas de VGA
 unsigned char vga_entry_color(vga_color fg, vga_color bg) {
   return fg | bg << 4;
 }
@@ -10,7 +10,7 @@ unsigned short vga_entry(unsigned char uc, unsigned char color) {
   return (unsigned short)uc | (unsigned short)color << 8;
 }
 
-/* Funções do terminal */
+// Funções do terminal
 void terminal_initialize(Terminal *term) {
   term->buffer = (unsigned short *)VGA_ADDRESS;
   term->cursor_x = 0;
@@ -49,13 +49,13 @@ void terminal_putchar(Terminal *term, char c) {
     term->cursor_x++;
   }
 
-  /* Quebra de linha automática */
+  // Quebra de linha automática
   if (term->cursor_x >= VGA_WIDTH) {
     term->cursor_x = 0;
     term->cursor_y++;
   }
 
-  /* Scroll da tela */
+  // Scroll da tela
   if (term->cursor_y >= VGA_HEIGHT) {
     for (size_t y = 1; y < VGA_HEIGHT; y++) {
       for (size_t x = 0; x < VGA_WIDTH; x++) {
@@ -63,7 +63,7 @@ void terminal_putchar(Terminal *term, char c) {
       }
     }
 
-    /* Limpa última linha */
+    // Limpa última linha
     for (size_t x = 0; x < VGA_WIDTH; x++) {
       term->buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x] =
           vga_entry(' ', vga_entry_color(term->fg_color, term->bg_color));
@@ -85,23 +85,23 @@ void terminal_writestring(Terminal *term, const char *data) {
   }
 }
 
-/* Função principal do kernel */
+// Função principal do kernel
 void kernel_main(void) {
   Terminal term;
   terminal_initialize(&term);
 
-  /* Exemplo de uso básico */
+  // Exemplo de uso básico
   terminal_writestring(&term, "Kernel em C com header!\n");
 
-  /* Mudando cores */
+  // Mudando cores
   terminal_setcolor(&term, VGA_COLOR_YELLOW, VGA_COLOR_BLUE);
   terminal_writestring(&term, "Texto colorido!\n");
 
-  /* Voltando às cores padrão */
+  // Voltando às cores padrão
   terminal_setcolor(&term, VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
   terminal_writestring(&term, "Mais mensagens do kernel...\n");
 
-  /* Demonstração de cores */
+  // Demonstração de cores
   for (int bg = 0; bg < 16; bg++) {
     for (int fg = 0; fg < 16; fg++) {
       terminal_setcolor(&term, fg, bg);
