@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include <stddef.h>
+#include <stdint.h>
 
 // Funções básicas de VGA
 unsigned char vga_entry_color(vga_color fg, vga_color bg) {
@@ -73,6 +74,30 @@ void terminal_putchar(Terminal *term, char c) {
   }
 }
 
+// Função para exibir a tela de apresentação
+void show_splash_screen(Terminal *term) {
+  terminal_setcolor(term, VGA_COLOR_GREEN, VGA_COLOR_BLACK);
+  terminal_writestring(term,
+                       "  +-----------------------------------------------+\n");
+  terminal_writestring(term,
+                       "  |           ::KERNEL WAIO::                |\n");
+  terminal_writestring(term,
+                       "  +-----------------------------------------------+\n");
+  terminal_setcolor(term, VGA_COLOR_CYAN, VGA_COLOR_BLACK);
+  terminal_writestring(term, "  |         BEM-VINDO          |\n");
+  terminal_writestring(term,
+                       "  +-----------------------------------------------+\n");
+  terminal_setcolor(term, VGA_COLOR_YELLOW, VGA_COLOR_BLACK);
+  terminal_writestring(term,
+                       "  |      PRESSIONE [ENTER] PARA REINICIAR         |\n");
+  terminal_writestring(
+      term, "  +-----------------------------------------------+\n\n");
+
+  // Centraliza o cursor abaixo da tela de apresentação
+  term->cursor_x = 0;
+  term->cursor_y = 8;
+}
+
 void terminal_write(Terminal *term, const char *data, size_t size) {
   for (size_t i = 0; i < size; i++) {
     terminal_putchar(term, data[i]);
@@ -85,28 +110,21 @@ void terminal_writestring(Terminal *term, const char *data) {
   }
 }
 
-// Função principal do kernel
-void kernel_main(void) {
-  Terminal term;
-  terminal_initialize(&term);
+uint8_t read_key_scancode() {
+  uint8_t scancode = 0;
+  while ((inb(KEYBOARD_STATUS_PORT) & 0x01) == 0)
+    ;
+  scancode = inb(KEYBOARD_DATA_PORT);
+  return scancode;
+}
 
-  // Exemplo de uso básico
-  terminal_writestring(&term, "Kernel em C com header!\n");
+void reboot_system() { outb(KEYBOARD_STATUS_PORT, 0xFE); }
 
-  // Mudando cores
-  terminal_setcolor(&term, VGA_COLOR_YELLOW, VGA_COLOR_BLUE);
-  terminal_writestring(&term, "Texto colorido!\n");
-
-  // Voltando às cores padrão
-  terminal_setcolor(&term, VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
-  terminal_writestring(&term, "Mais mensagens do kernel...\n");
-
-  // Demonstração de cores
-  for (int bg = 0; bg < 16; bg++) {
-    for (int fg = 0; fg < 16; fg++) {
-      terminal_setcolor(&term, fg, bg);
-      terminal_putchar(&term, 'X');
-    }
-    terminal_putchar(&term, '\n');
-  }
+inline uint8_t inb(uint16_t port) {
+  uint8_t result;
+  asm volatile("inb %1, %0" : "=a"(result) : "Nd"(port));
+  return result;
+}
+inline void outb(uint16_t port, uint8_t value) {
+  asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
